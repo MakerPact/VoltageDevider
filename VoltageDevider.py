@@ -127,12 +127,16 @@ while True:
 		if event == sg.WINDOW_CLOSED:
 				break
 		elif event == 'Calculate':
-				Vin = float(values['-VIN-']) if values['-VIN-'] else None
-				Vout = float(values['-VOUT-']) if values['-VOUT-'] else None
-				R1 = float(values['-R1-']) if values['-R1-'] else None
-				R2 = float(values['-R2-']) if values['-R2-'] else None
-				e_series = values['-ESERIES-']
-				desired_current = float(values['-CURRENT-']) if values['-CURRENT-'] else None
+				try:
+						Vin = float(values['-VIN-']) if values['-VIN-'] else None
+						Vout = float(values['-VOUT-']) if values['-VOUT-'] else None
+						R1 = float(values['-R1-']) if values['-R1-'] else None
+						R2 = float(values['-R2-']) if values['-R2-'] else None
+						e_series = values['-ESERIES-']
+						desired_current = float(values['-CURRENT-']) if values['-CURRENT-'] else None
+				except ValueError:
+						sg.popup_error('Invalid input: Please enter valid numerical values.', title='Error')
+						continue
 
 				result = calculate_voltage_divider(Vin, Vout, R1, R2, e_series, desired_current)
 				if result:
