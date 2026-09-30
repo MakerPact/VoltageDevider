@@ -25,39 +25,44 @@ def generate_e_series_values(series, min_value, max_value):
 def find_best_resistor_combinations(Vin, Vout, e_series, desired_current=None, num_results=20):
 		resistors = generate_e_series_values(e_series, 1, 1e6)  # Generate resistors from 1 ohm to 1 Mohm
 		target_ratio = Vout / Vin
-		combinations = []
+		best_combinations = {}
 
-		for R1 in resistors:
-				for R2 in resistors:
-						ratio = R2 / (R1 + R2)
-						error = abs(ratio - target_ratio)
-						current = Vin / (R1 + R2) * 1000  # Convert to mA
-						power = Vin * current / 1000  # Power in mW
-						if desired_current:
+		if desired_current:
+				for R1 in resistors:
+						for R2 in resistors:
+								r1_plus_r2 = R1 + R2
+								ratio = R2 / r1_plus_r2
+
+								rounded_ratio = round(ratio, 4)  # Round to 4 decimal places for comparison.
+
+								error = abs(ratio - target_ratio)
+								current = Vin / r1_plus_r2 * 1000  # Convert to mA
 								current_error = abs(current - desired_current)
 								total_error = error + current_error / desired_current
-						else:
-								total_error = error
 
-						combinations.append((R1, R2, error, current, power, total_error))
+								existing = best_combinations.get(rounded_ratio)
+								if existing is None or total_error < existing[5]:
+										power = Vin * current / 1000  # Power in mW
+										best_combinations[rounded_ratio] = (R1, R2, error, current, power, total_error)
+		else:
+				for R1 in resistors:
+						for R2 in resistors:
+								r1_plus_r2 = R1 + R2
+								ratio = R2 / r1_plus_r2
 
+								rounded_ratio = round(ratio, 4)
+								error = abs(ratio - target_ratio)
+
+								existing = best_combinations.get(rounded_ratio)
+								if existing is None or error < existing[5]:
+										current = Vin / r1_plus_r2 * 1000
+										power = Vin * current / 1000
+										best_combinations[rounded_ratio] = (R1, R2, error, current, power, error)
+
+		combinations = list(best_combinations.values())
 		combinations.sort(key=lambda x: x[5])  # Sort by total error
 
-
-		# Remove redundant combinations like powers of 10, 100, 1000 ....
-		unique_combinations = []
-		seen_ratios = set()
-		for combo in combinations:
-				R1, R2 = combo[0], combo[1]
-				ratio = R2 / (R1 + R2)
-				rounded_ratio = round(ratio, 4)  # Round to 4 decimal places for comparison. Can be closer but seams redundant.
-				if rounded_ratio not in seen_ratios:
-						seen_ratios.add(rounded_ratio)
-						unique_combinations.append(combo)
-				if len(unique_combinations) == num_results:
-						break
-
-		return unique_combinations
+		return combinations[:num_results]
 
 # Modify the existing calculate_voltage_divider function:
 def calculate_voltage_divider(Vin, Vout, R1, R2, e_series, desired_current=None):
