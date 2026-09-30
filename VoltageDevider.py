@@ -37,31 +37,6 @@ sg.theme_add_new('Discord', {'BACKGROUND': '#36393f',
 														 'PROGRESS_DEPTH': 0})
 
 sg.theme('Discord')
-
-# Create the layout for all of the objects that will be used in the app.
-layout = [
-		[sg.Text('Voltage Divider Calculator', font=('Arial', 20))],
-		[sg.Text('Input Voltage (Vin):', size=(15, 1)), sg.InputText(key='-VIN-')],
-		[sg.Text('Output Voltage (Vout):', size=(15, 1)), sg.InputText(key='-VOUT-')],
-		[sg.Text('Desired Current (mA):', size=(15, 1)), sg.InputText(key='-CURRENT-')],
-		[sg.Text('R1 (Ω):', size=(15, 1)), sg.InputText(key='-R1-')],
-		[sg.Text('R2 (Ω):', size=(15, 1)), sg.InputText(key='-R2-')],
-		[sg.Text('E-Series:', size=(15, 1)), sg.Combo(['E3', 'E6', 'E12', 'E24', 'E48', 'E96'], default_value='E24', key='-ESERIES-')],
-		[sg.Button('Calculate'), sg.Button('Clear')],
-		[sg.Text('Results:', font=('Arial', 16))],
-		[sg.Table(values=[], headings=['Rank', 'R1 (Ω)', 'R2 (Ω)', 'Vout (V)', 'Current (mA)', 'Power (mW)', 'Error (%)'], 
-							auto_size_columns=False,
-							col_widths=[5, 10, 10, 10, 12, 12, 10],
-							justification='right',
-							num_rows=20,
-							key='-RESULTS-',
-							alternating_row_color='#2C2F33',
-							text_color='#FFFFFF',
-							background_color='#36393F',
-							enable_events=True)]
-]
-
-
 # this is the math behind the selections the user inputs.
 
 def find_best_resistor_combinations(Vin, Vout, e_series, desired_current=None, num_results=20):
@@ -116,9 +91,31 @@ def calculate_voltage_divider(Vin, Vout, R1, R2, e_series, desired_current=None)
 				Vin = Vout * ((R1 + R2) / R2)
 		else:
 				return None
-		return [(R1, R2, 0)]  # Return as a list for consistency
+		return [(R1, R2, 0)]  # Return as a list fo
+def main():
+		# Create the layout for all of the objects that will be used in the app.
+		layout = [
+				[sg.Text('Voltage Divider Calculator', font=('Arial', 20))],
+				[sg.Text('Input Voltage (Vin):', size=(15, 1)), sg.InputText(key='-VIN-')],
+				[sg.Text('Output Voltage (Vout):', size=(15, 1)), sg.InputText(key='-VOUT-')],
+				[sg.Text('Desired Current (mA):', size=(15, 1)), sg.InputText(key='-CURRENT-')],
+				[sg.Text('R1 (Ω):', size=(15, 1)), sg.InputText(key='-R1-')],
+				[sg.Text('R2 (Ω):', size=(15, 1)), sg.InputText(key='-R2-')],
+				[sg.Text('E-Series:', size=(15, 1)), sg.Combo(['E3', 'E6', 'E12', 'E24', 'E48', 'E96'], default_value='E24', key='-ESERIES-')],
+				[sg.Button('Calculate'), sg.Button('Clear')],
+				[sg.Text('Results:', font=('Arial', 16))],
+				[sg.Table(values=[], headings=['Rank', 'R1 (Ω)', 'R2 (Ω)', 'Vout (V)', 'Current (mA)', 'Power (mW)', 'Error (%)'],
+									auto_size_columns=False,
+									col_widths=[5, 10, 10, 10, 12, 12, 10],
+									justification='right',
+									num_rows=20,
+									key='-RESULTS-',
+									alternating_row_color='#2C2F33',
+									text_color='#FFFFFF',
+									background_color='#36393F',
+									enable_events=True)]
+		]
 
-if __name__ == '__main__':
 		# make the window, and populate it with all of the objects.
 		window = sg.Window('VoltageDevider', layout, finalize=True, resizable=True, size=(800, 600))
 		while True:
@@ -143,13 +140,14 @@ if __name__ == '__main__':
 
 										Vout_calc = Vin * (R2 / (R1 + R2)) if Vin else 0
 										table_data.append([
-		    i,
-		    f"{R1:.2f}" if R1 is not None else "N/A",
-		    f"{R2:.2f}" if R2 is not None else "N/A",
-		    f"{Vout_calc:.2f}" if Vout_calc is not None else "N/A",
-		    f"{current:.2f}" if current is not None else "N/A",
-		    f"{power:.2f}" if power is not None else "N/A",
-		    f"{error*100:.2f}" if error is not None else "N/A"
+
+			i,
+			f"{R1:.2f}" if R1 is not None else "N/A",
+			f"{R2:.2f}" if R2 is not None else "N/A",
+			f"{Vout_calc:.2f}" if Vout_calc is not None else "N/A",
+			f"{current:.2f}" if current is not None else "N/A",
+			f"{power:.2f}" if power is not None else "N/A",
+			f"{error*100:.2f}" if error is not None else "N/A"
 		])
 
 								window['-RESULTS-'].update(values=table_data)
@@ -160,4 +158,9 @@ if __name__ == '__main__':
 								window[key].update('')
 						window['-RESULTS-'].update(values=[])
 
+
 		window.close()
+
+if __name__ == '__main__':
+		main()
+
