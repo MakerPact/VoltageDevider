@@ -37,7 +37,6 @@ sg.theme_add_new('Discord', {'BACKGROUND': '#36393f',
 														 'PROGRESS_DEPTH': 0})
 
 sg.theme('Discord')
-
 # this is the math behind the selections the user inputs.
 
 def find_best_resistor_combinations(Vin, Vout, e_series, desired_current=None, num_results=20):
@@ -92,8 +91,7 @@ def calculate_voltage_divider(Vin, Vout, R1, R2, e_series, desired_current=None)
 				Vin = Vout * ((R1 + R2) / R2)
 		else:
 				return None
-		return [(R1, R2, 0)]  # Return as a list for consistency
-
+		return [(R1, R2, 0)]  # Return as a list fo
 def main():
 		# Create the layout for all of the objects that will be used in the app.
 		layout = [
@@ -120,7 +118,6 @@ def main():
 
 		# make the window, and populate it with all of the objects.
 		window = sg.Window('VoltageDevider', layout, finalize=True, resizable=True, size=(800, 600))
-
 		while True:
 				event, values = window.read()
 				if event == sg.WINDOW_CLOSED:
@@ -143,6 +140,7 @@ def main():
 
 										Vout_calc = Vin * (R2 / (R1 + R2)) if Vin else 0
 										table_data.append([
+
 			i,
 			f"{R1:.2f}" if R1 is not None else "N/A",
 			f"{R2:.2f}" if R2 is not None else "N/A",
@@ -160,7 +158,9 @@ def main():
 								window[key].update('')
 						window['-RESULTS-'].update(values=[])
 
+
 		window.close()
 
 if __name__ == '__main__':
 		main()
+
