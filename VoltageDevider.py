@@ -23,44 +23,36 @@ def generate_e_series_values(series, min_value, max_value):
 # this is the math behind the selections the user inputs.
 
 def find_best_resistor_combinations(Vin, Vout, e_series, desired_current=None, num_results=20):
-		resistors = generate_e_series_values(e_series, 1, 1e6)  # Generate resistors from 1 ohm to 1 Mohm
+		resistors = generate_e_series_values(e_series, 1, 1e6)
 		target_ratio = Vout / Vin
 		best_combinations = {}
 
-		if desired_current:
-				for R1 in resistors:
-						for R2 in resistors:
-								r1_plus_r2 = R1 + R2
-								ratio = R2 / r1_plus_r2
+		for R1 in resistors:
+				for R2 in resistors:
+						r1_plus_r2 = R1 + R2
+						ratio = R2 / r1_plus_r2
+						rounded_ratio = round(ratio, 4)
 
-								rounded_ratio = round(ratio, 4)  # Round to 4 decimal places for comparison.
+						error = abs(ratio - target_ratio)
 
-								error = abs(ratio - target_ratio)
-								current = Vin / r1_plus_r2 * 1000  # Convert to mA
+						if desired_current:
+								current = Vin / r1_plus_r2 * 1000
 								current_error = abs(current - desired_current)
 								total_error = error + current_error / desired_current
+						else:
+								total_error = error
 
-								existing = best_combinations.get(rounded_ratio)
-								if existing is None or total_error < existing[5]:
-										power = Vin * current / 1000  # Power in mW
-										best_combinations[rounded_ratio] = (R1, R2, error, current, power, total_error)
-		else:
-				for R1 in resistors:
-						for R2 in resistors:
-								r1_plus_r2 = R1 + R2
-								ratio = R2 / r1_plus_r2
-
-								rounded_ratio = round(ratio, 4)
-								error = abs(ratio - target_ratio)
-
-								existing = best_combinations.get(rounded_ratio)
-								if existing is None or error < existing[5]:
+						# Check if we should insert/update
+						existing = best_combinations.get(rounded_ratio)
+						if existing is None or total_error < existing[5]:
+								if not desired_current:
 										current = Vin / r1_plus_r2 * 1000
-										power = Vin * current / 1000
-										best_combinations[rounded_ratio] = (R1, R2, error, current, power, error)
+								power = Vin * current / 1000
+								best_combinations[rounded_ratio] = (R1, R2, error, current, power, total_error)
 
+		# Convert dict values to a list and sort
 		combinations = list(best_combinations.values())
-		combinations.sort(key=lambda x: x[5])  # Sort by total error
+		combinations.sort(key=lambda x: x[5])
 
 		return combinations[:num_results]
 
@@ -68,7 +60,7 @@ def find_best_resistor_combinations(Vin, Vout, e_series, desired_current=None, n
 def calculate_voltage_divider(Vin, Vout, R1, R2, e_series, desired_current=None):
 		if Vin and Vout and not R1 and not R2:
 				combinations = find_best_resistor_combinations(Vin, Vout, e_series, desired_current)
-				return [(Vin, Vout) + combo for combo in combinations]
+				return combinations
 		elif Vin and R1 and R2 and not Vout:
 				Vout = Vin * (R2 / (R1 + R2))
 		elif Vin and Vout and R2 and not R1:
@@ -80,8 +72,9 @@ def calculate_voltage_divider(Vin, Vout, R1, R2, e_series, desired_current=None)
 		else:
 				return None
 
-		return [(R1, R2, 0)]  # Return as a list fo
+		return [(R1, R2, 0, None, None, 0)]  # Return as a list for consistency
 def main():
+		import PySimpleGUI as sg
 		# Create the layout for all of the objects that will be used in the app.
 		layout = [
 				[sg.Text('Voltage Divider Calculator', font=('Arial', 20))],
@@ -123,21 +116,17 @@ def main():
 						if result:
 								table_data = []
 								for i, values in enumerate(result, 1):
-										R1, R2, error, *rest = values + (None, None, None)
-										current = rest[0] if rest else None
-										power = rest[1] if len(rest) > 1 else None
+										R1, R2, error, current, power, total_error = values
 
 										Vout_calc = Vin * (R2 / (R1 + R2)) if Vin else 0
 										table_data.append([
-
-
 			i,
 			f"{R1:.2f}" if R1 is not None else "N/A",
 			f"{R2:.2f}" if R2 is not None else "N/A",
 			f"{Vout_calc:.2f}" if Vout_calc is not None else "N/A",
 			f"{current:.2f}" if current is not None else "N/A",
 			f"{power:.2f}" if power is not None else "N/A",
-
+			f"{error*100:.2f}" if error is not None else "N/A"
 		])
 
 								window['-RESULTS-'].update(values=table_data)
@@ -148,7 +137,7 @@ def main():
 								window[key].update('')
 						window['-RESULTS-'].update(values=[])
 
-	window.close()
+		window.close()
 
 if __name__ == '__main__':
 		main()
