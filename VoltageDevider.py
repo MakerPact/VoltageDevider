@@ -63,7 +63,7 @@ def find_best_resistor_combinations(Vin, Vout, e_series, desired_current=None, n
 def calculate_voltage_divider(Vin, Vout, R1, R2, e_series, desired_current=None):
 		if Vin and Vout and not R1 and not R2:
 				combinations = find_best_resistor_combinations(Vin, Vout, e_series, desired_current)
-				return combinations
+				return [(Vin, Vout) + combo for combo in combinations]
 		elif Vin and R1 and R2 and not Vout:
 				Vout = Vin * (R2 / (R1 + R2))
 		elif Vin and Vout and R2 and not R1:
@@ -74,6 +74,7 @@ def calculate_voltage_divider(Vin, Vout, R1, R2, e_series, desired_current=None)
 				Vin = Vout * ((R1 + R2) / R2)
 		else:
 				return None
+
 		return [(R1, R2, 0)]  # Return as a list fo
 def main():
 		# Create the layout for all of the objects that will be used in the app.
@@ -146,3 +147,4 @@ def main():
 
 if __name__ == '__main__':
 		main()
+
