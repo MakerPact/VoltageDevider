@@ -1,4 +1,3 @@
-import PySimpleGUI as sg
 import math
 
 # Base E-series values
@@ -21,50 +20,6 @@ def generate_e_series_values(series, min_value, max_value):
 						if min_value <= value <= max_value:
 								values.append(value)
 		return sorted(values)
-
-
-
-# Discord-inspired theme that I am matching as closly as possable.
-sg.theme_add_new('Discord', {'BACKGROUND': '#36393f',
-														 'TEXT': '#dcddde',
-														 'INPUT': '#40444b',
-														 'TEXT_INPUT': '#dcddde',
-														 'SCROLL': '#40444b',
-														 'BUTTON': ('#ffffff', '#7289da'),
-														 'PROGRESS': ('#ffffff', '#7289da'),
-														 'BORDER': 1,
-														 'SLIDER_DEPTH': 0,
-														 'PROGRESS_DEPTH': 0})
-
-sg.theme('Discord')
-
-# Create the layout for all of the objects that will be used in the app.
-layout = [
-		[sg.Text('Voltage Divider Calculator', font=('Arial', 20))],
-		[sg.Text('Input Voltage (Vin):', size=(15, 1)), sg.InputText(key='-VIN-')],
-		[sg.Text('Output Voltage (Vout):', size=(15, 1)), sg.InputText(key='-VOUT-')],
-		[sg.Text('Desired Current (mA):', size=(15, 1)), sg.InputText(key='-CURRENT-')],
-		[sg.Text('R1 (Ω):', size=(15, 1)), sg.InputText(key='-R1-')],
-		[sg.Text('R2 (Ω):', size=(15, 1)), sg.InputText(key='-R2-')],
-		[sg.Text('E-Series:', size=(15, 1)), sg.Combo(['E3', 'E6', 'E12', 'E24', 'E48', 'E96'], default_value='E24', key='-ESERIES-')],
-		[sg.Button('Calculate'), sg.Button('Clear')],
-		[sg.Text('Results:', font=('Arial', 16))],
-		[sg.Table(values=[], headings=['Rank', 'R1 (Ω)', 'R2 (Ω)', 'Vout (V)', 'Current (mA)', 'Power (mW)', 'Error (%)'], 
-							auto_size_columns=False,
-							col_widths=[5, 10, 10, 10, 12, 12, 10],
-							justification='right',
-							num_rows=20,
-							key='-RESULTS-',
-							alternating_row_color='#2C2F33',
-							text_color='#FFFFFF',
-							background_color='#36393F',
-							enable_events=True)]
-]
-
-
-# make the window, and populate it with all of the objects.
-window = sg.Window('VoltageDevider', layout, finalize=True, resizable=True, size=(800, 600))
-
 # this is the math behind the selections the user inputs.
 
 def find_best_resistor_combinations(Vin, Vout, e_series, desired_current=None, num_results=20):
@@ -113,7 +68,7 @@ def find_best_resistor_combinations(Vin, Vout, e_series, desired_current=None, n
 def calculate_voltage_divider(Vin, Vout, R1, R2, e_series, desired_current=None):
 		if Vin and Vout and not R1 and not R2:
 				combinations = find_best_resistor_combinations(Vin, Vout, e_series, desired_current)
-				return combinations
+				return [(Vin, Vout) + combo for combo in combinations]
 		elif Vin and R1 and R2 and not Vout:
 				Vout = Vin * (R2 / (R1 + R2))
 		elif Vin and Vout and R2 and not R1:
@@ -124,46 +79,77 @@ def calculate_voltage_divider(Vin, Vout, R1, R2, e_series, desired_current=None)
 				Vin = Vout * ((R1 + R2) / R2)
 		else:
 				return None
-		return [(R1, R2, 0)]  # Return as a list for consistency
+
+		return [(R1, R2, 0)]  # Return as a list fo
+def main():
+		# Create the layout for all of the objects that will be used in the app.
+		layout = [
+				[sg.Text('Voltage Divider Calculator', font=('Arial', 20))],
+				[sg.Text('Input Voltage (Vin):', size=(15, 1)), sg.InputText(key='-VIN-')],
+				[sg.Text('Output Voltage (Vout):', size=(15, 1)), sg.InputText(key='-VOUT-')],
+				[sg.Text('Desired Current (mA):', size=(15, 1)), sg.InputText(key='-CURRENT-')],
+				[sg.Text('R1 (Ω):', size=(15, 1)), sg.InputText(key='-R1-')],
+				[sg.Text('R2 (Ω):', size=(15, 1)), sg.InputText(key='-R2-')],
+				[sg.Text('E-Series:', size=(15, 1)), sg.Combo(['E3', 'E6', 'E12', 'E24', 'E48', 'E96'], default_value='E24', key='-ESERIES-')],
+				[sg.Button('Calculate'), sg.Button('Clear')],
+				[sg.Text('Results:', font=('Arial', 16))],
+				[sg.Table(values=[], headings=['Rank', 'R1 (Ω)', 'R2 (Ω)', 'Vout (V)', 'Current (mA)', 'Power (mW)', 'Error (%)'],
+									auto_size_columns=False,
+									col_widths=[5, 10, 10, 10, 12, 12, 10],
+									justification='right',
+									num_rows=20,
+									key='-RESULTS-',
+									alternating_row_color='#2C2F33',
+									text_color='#FFFFFF',
+									background_color='#36393F',
+									enable_events=True)]
+		]
+
+		# make the window, and populate it with all of the objects.
+		window = sg.Window('VoltageDevider', layout, finalize=True, resizable=True, size=(800, 600))
+		while True:
+				event, values = window.read()
+				if event == sg.WINDOW_CLOSED:
+						break
+				elif event == 'Calculate':
+						Vin = float(values['-VIN-']) if values['-VIN-'] else None
+						Vout = float(values['-VOUT-']) if values['-VOUT-'] else None
+						R1 = float(values['-R1-']) if values['-R1-'] else None
+						R2 = float(values['-R2-']) if values['-R2-'] else None
+						e_series = values['-ESERIES-']
+						desired_current = float(values['-CURRENT-']) if values['-CURRENT-'] else None
+
+						result = calculate_voltage_divider(Vin, Vout, R1, R2, e_series, desired_current)
+						if result:
+								table_data = []
+								for i, values in enumerate(result, 1):
+										R1, R2, error, *rest = values + (None, None, None)
+										current = rest[0] if rest else None
+										power = rest[1] if len(rest) > 1 else None
+
+										Vout_calc = Vin * (R2 / (R1 + R2)) if Vin else 0
+										table_data.append([
 
 
-while True:
-		event, values = window.read()
-		if event == sg.WINDOW_CLOSED:
-				break
-		elif event == 'Calculate':
-				Vin = float(values['-VIN-']) if values['-VIN-'] else None
-				Vout = float(values['-VOUT-']) if values['-VOUT-'] else None
-				R1 = float(values['-R1-']) if values['-R1-'] else None
-				R2 = float(values['-R2-']) if values['-R2-'] else None
-				e_series = values['-ESERIES-']
-				desired_current = float(values['-CURRENT-']) if values['-CURRENT-'] else None
+			i,
+			f"{R1:.2f}" if R1 is not None else "N/A",
+			f"{R2:.2f}" if R2 is not None else "N/A",
+			f"{Vout_calc:.2f}" if Vout_calc is not None else "N/A",
+			f"{current:.2f}" if current is not None else "N/A",
+			f"{power:.2f}" if power is not None else "N/A",
 
-				result = calculate_voltage_divider(Vin, Vout, R1, R2, e_series, desired_current)
-				if result:
-						table_data = []
-						for i, values in enumerate(result, 1):
-								R1, R2, error, *rest = values + (None, None, None)
-								current = rest[0] if rest else None
-								power = rest[1] if len(rest) > 1 else None
+		])
 
-								Vout_calc = Vin * (R2 / (R1 + R2)) if Vin else 0
-								table_data.append([
-    i,
-    f"{R1:.2f}" if R1 is not None else "N/A",
-    f"{R2:.2f}" if R2 is not None else "N/A",
-    f"{Vout_calc:.2f}" if Vout_calc is not None else "N/A",
-    f"{current:.2f}" if current is not None else "N/A",
-    f"{power:.2f}" if power is not None else "N/A",
-    f"{error*100:.2f}" if error is not None else "N/A"
-])
+								window['-RESULTS-'].update(values=table_data)
+						else:
+								sg.popup('Insufficient data. Please provide Vin and Vout, or three out of Vin, Vout, R1, and R2.')
+				elif event == 'Clear':
+						for key in ('-VIN-', '-VOUT-', '-CURRENT-', '-R1-', '-R2-'):
+								window[key].update('')
+						window['-RESULTS-'].update(values=[])
 
-						window['-RESULTS-'].update(values=table_data)
-				else:
-						sg.popup('Insufficient data. Please provide Vin and Vout, or three out of Vin, Vout, R1, and R2.')
-		elif event == 'Clear':
-				for key in ('-VIN-', '-VOUT-', '-CURRENT-', '-R1-', '-R2-'):
-						window[key].update('')
-				window['-RESULTS-'].update(values=[])
+	window.close()
 
-window.close()
+if __name__ == '__main__':
+		main()
+
