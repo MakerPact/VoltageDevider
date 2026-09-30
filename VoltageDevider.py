@@ -20,9 +20,6 @@ def generate_e_series_values(series, min_value, max_value):
 						if min_value <= value <= max_value:
 								values.append(value)
 		return sorted(values)
-
-
-
 # this is the math behind the selections the user inputs.
 
 def find_best_resistor_combinations(Vin, Vout, e_series, desired_current=None, num_results=20):
@@ -77,25 +74,8 @@ def calculate_voltage_divider(Vin, Vout, R1, R2, e_series, desired_current=None)
 				Vin = Vout * ((R1 + R2) / R2)
 		else:
 				return None
-		return [(R1, R2, 0)]  # Return as a list for consistency
-
-
+		return [(R1, R2, 0)]  # Return as a list fo
 def main():
-		import PySimpleGUI as sg
-		# Discord-inspired theme that I am matching as closly as possable.
-		sg.theme_add_new('Discord', {'BACKGROUND': '#36393f',
-																 'TEXT': '#dcddde',
-																 'INPUT': '#40444b',
-																 'TEXT_INPUT': '#dcddde',
-																 'SCROLL': '#40444b',
-																 'BUTTON': ('#ffffff', '#7289da'),
-																 'PROGRESS': ('#ffffff', '#7289da'),
-																 'BORDER': 1,
-																 'SLIDER_DEPTH': 0,
-																 'PROGRESS_DEPTH': 0})
-
-		sg.theme('Discord')
-
 		# Create the layout for all of the objects that will be used in the app.
 		layout = [
 				[sg.Text('Voltage Divider Calculator', font=('Arial', 20))],
@@ -121,7 +101,6 @@ def main():
 
 		# make the window, and populate it with all of the objects.
 		window = sg.Window('VoltageDevider', layout, finalize=True, resizable=True, size=(800, 600))
-
 		while True:
 				event, values = window.read()
 				if event == sg.WINDOW_CLOSED:
@@ -144,13 +123,15 @@ def main():
 
 										Vout_calc = Vin * (R2 / (R1 + R2)) if Vin else 0
 										table_data.append([
-				i,
-				f"{R1:.2f}" if R1 is not None else "N/A",
-				f"{R2:.2f}" if R2 is not None else "N/A",
-				f"{Vout_calc:.2f}" if Vout_calc is not None else "N/A",
-				f"{current:.2f}" if current is not None else "N/A",
-				f"{power:.2f}" if power is not None else "N/A",
-				f"{error*100:.2f}" if error is not None else "N/A"
+
+
+			i,
+			f"{R1:.2f}" if R1 is not None else "N/A",
+			f"{R2:.2f}" if R2 is not None else "N/A",
+			f"{Vout_calc:.2f}" if Vout_calc is not None else "N/A",
+			f"{current:.2f}" if current is not None else "N/A",
+			f"{power:.2f}" if power is not None else "N/A",
+
 		])
 
 								window['-RESULTS-'].update(values=table_data)
@@ -161,7 +142,7 @@ def main():
 								window[key].update('')
 						window['-RESULTS-'].update(values=[])
 
-		window.close()
+	window.close()
 
 if __name__ == '__main__':
 		main()
