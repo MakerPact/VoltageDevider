@@ -108,7 +108,7 @@ def find_best_resistor_combinations(Vin, Vout, e_series, desired_current=None, n
 def calculate_voltage_divider(Vin, Vout, R1, R2, e_series, desired_current=None):
 		if Vin and Vout and not R1 and not R2:
 				combinations = find_best_resistor_combinations(Vin, Vout, e_series, desired_current)
-				return combinations
+				return [(Vin, Vout) + combo for combo in combinations]
 		elif Vin and R1 and R2 and not Vout:
 				Vout = Vin * (R2 / (R1 + R2))
 		elif Vin and Vout and R2 and not R1:
@@ -119,7 +119,7 @@ def calculate_voltage_divider(Vin, Vout, R1, R2, e_series, desired_current=None)
 				Vin = Vout * ((R1 + R2) / R2)
 		else:
 				return None
-		return [(R1, R2, 0)]  # Return as a list for consistency
+		return [(Vin, Vout, R1, R2, 0)]  # Return as a list for consistency
 
 
 while True:
@@ -138,11 +138,11 @@ while True:
 				if result:
 						table_data = []
 						for i, values in enumerate(result, 1):
-								R1, R2, error, *rest = values + (None, None, None)
+								Vin_res, Vout_res, R1, R2, error, *rest = values + (None, None, None)
 								current = rest[0] if rest else None
 								power = rest[1] if len(rest) > 1 else None
 
-								Vout_calc = Vin * (R2 / (R1 + R2)) if Vin else 0
+								Vout_calc = Vin_res * (R2 / (R1 + R2)) if Vin_res else 0
 								table_data.append([
     i,
     f"{R1:.2f}" if R1 is not None else "N/A",
